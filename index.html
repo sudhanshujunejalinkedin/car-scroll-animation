@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scroll Car Animation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- Lenis for smooth scroll -->
+  <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-color: #c9cbcd;
+    }
+  </style>
+</head>
+<body class="bg-[#c9cbcd] text-black">
+
+  <!-- Screen Container -->
+  <div id="hero" class="relative w-full h-screen overflow-hidden flex flex-col justify-center select-none">
+
+    <!-- TOP CARDS CONTAINER -->
+    <div class="absolute top-[8%] left-[50%] -translate-x-1/2 flex items-center gap-6 z-20 pointer-events-none">
+      <!-- 58% Lime Card -->
+      <div id="card1" class="w-64 h-36 bg-[#d9f942] rounded-2xl p-6 flex flex-col justify-between shadow-md opacity-0 translate-y-6">
+        <h2 class="text-[52px] font-black leading-none text-black tracking-tight">58%</h2>
+        <p class="text-xs font-semibold text-black leading-snug">Increase in pick up point use</p>
+      </div>
+
+      <!-- 27% Dark Card -->
+      <div id="card2" class="w-64 h-36 bg-[#2d2f31] rounded-2xl p-6 flex flex-col justify-between shadow-md opacity-0 translate-y-6">
+        <h2 class="text-[52px] font-black leading-none text-white tracking-tight">27%</h2>
+        <p class="text-xs font-medium text-gray-200 leading-snug">Increase in pick up point use</p>
+      </div>
+    </div>
+
+    <!-- CENTER ROAD TRACK (Height badha di car ke proportionate karne ke liye) -->
+    <div id="trackContainer" class="relative w-full h-48 bg-[#1f2124] flex items-center overflow-visible">
+
+      <!-- Green revealed background with bold text -->
+      <div id="greenTrack" class="absolute left-0 top-0 h-full bg-[#10e575] flex items-center overflow-hidden w-0 z-10 pointer-events-none">
+        <span class="text-6xl md:text-8xl font-black tracking-[0.2em] text-black whitespace-nowrap pl-10">
+          WELCOME ITZFIZZ
+        </span>
+      </div>
+
+      <!-- Car Wrapper: Size badha kar w-80 md:w-96 kiya gaya hai -->
+      <div id="carWrapper" class="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-80 md:w-96 pointer-events-none">
+        <img 
+          id="carImg"
+          src="assets/images/car.png" 
+          alt="Sports Car" 
+          class="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.85)]"
+        />
+      </div>
+
+    </div>
+
+    <!-- BOTTOM CARDS CONTAINER -->
+    <div class="absolute bottom-[8%] left-[58%] -translate-x-1/2 flex items-center gap-6 z-20 pointer-events-none">
+      <!-- 23% Sky Blue Card -->
+      <div id="card3" class="w-64 h-36 bg-[#60c4ff] rounded-2xl p-6 flex flex-col justify-between shadow-md opacity-0 translate-y-6">
+        <h2 class="text-[52px] font-black leading-none text-black tracking-tight">23%</h2>
+        <p class="text-xs font-semibold text-black leading-snug">Decreased in customer phone calls</p>
+      </div>
+
+      <!-- 40% Orange Card -->
+      <div id="card4" class="w-64 h-36 bg-[#f08a4b] rounded-2xl p-6 flex flex-col justify-between shadow-md opacity-0 translate-y-6">
+        <h2 class="text-[52px] font-black leading-none text-white tracking-tight">40%</h2>
+        <p class="text-xs font-medium text-white leading-snug">Decreased in customer phone calls</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Lenis smooth momentum scroll
+    const lenis = new Lenis({
+      lerp: 0.1,
+      wheelMultiplier: 0.9,
+    });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const carWrapper = document.getElementById("carWrapper");
+    const greenTrack = document.getElementById("greenTrack");
+
+    // Dynamic sync function
+    function updateGreenTrack() {
+      const carRect = carWrapper.getBoundingClientRect();
+      // Badi car ke hisaab se spoiler offset 65px set kiya taaki green car ke andar se nikle
+      const syncPosition = carRect.left + 65; 
+      greenTrack.style.width = Math.max(0, syncPosition) + "px";
+    }
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#hero",
+        start: "top top",
+        end: "+=2600",
+        scrub: 0.6,
+        pin: true,
+        anticipatePin: 1
+      },
+      onUpdate: updateGreenTrack
+    });
+
+    // Car travel timeline
+    tl.fromTo(carWrapper, 
+      { x: -60 }, 
+      { 
+        x: () => window.innerWidth + 120, 
+        ease: "none", 
+        duration: 10 
+      }, 
+      0
+    );
+
+    // Cards staggered pop-ins
+    tl.to("#card1", { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }, 2.0);
+    tl.to("#card3", { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }, 3.5);
+    tl.to("#card2", { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }, 5.5);
+    tl.to("#card4", { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }, 7.2);
+
+    updateGreenTrack();
+    window.addEventListener("resize", updateGreenTrack);
+  </script>
+
+</body>
+</html>
